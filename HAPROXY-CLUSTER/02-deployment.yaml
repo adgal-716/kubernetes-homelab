@@ -23,17 +23,17 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
       containers:
-      - name: haproxy
-        image: haproxy:3.1.13
-        ports:
-        - containerPort: 6443
-        - containerPort: 8404
-        volumeMounts:
-        - name: config
-          mountPath: /usr/local/etc/haproxy/haproxy.cfg
-          subPath: haproxy.cfg
+        - name: haproxy
+          image: haproxy:3.1.13
+          ports:
+            - containerPort: 6443
+            - containerPort: 8404
+          volumeMounts:
+            - name: config
+              mountPath: /usr/local/etc/haproxy/haproxy.cfg
+              subPath: haproxy.cfg
       volumes:
-      - name: config
-        configMap:
-          name: haproxy-k3s-config
+        - name: config
+          configMap:
+            name: haproxy-k3s-config
 

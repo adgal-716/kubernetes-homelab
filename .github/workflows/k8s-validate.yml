@@ -16,8 +16,7 @@ jobs:
         with:
           config_file: .yamllint.yml
           file_or_dir: .
-          ignore: |
-            .github/
+          
       - name: Validate Kubernetes manifests
         uses: docker://ghcr.io/yannh/kubeconform:latest
         with:
