@@ -1,1 +1,9 @@
 *.swp
+# Kubernetes secrets (never commit real credentials)
+*secret.yaml
+*secrets.yaml
+*secret-*.yaml
+*secrets-*.yaml
+
+# Example secrets should be committed
+!*example-secret*.yaml
