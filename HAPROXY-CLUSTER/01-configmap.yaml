@@ -38,3 +38,4 @@ data:
         stats refresh 5s
         stats realm Haproxy\ Statistics
         stats auth admin:4dm1n
+

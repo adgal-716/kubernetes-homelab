@@ -5,3 +5,4 @@ metadata:
 provisioner: nfs.storage.k8s.io
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
+
