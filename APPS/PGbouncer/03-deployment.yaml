@@ -26,7 +26,6 @@ spec:
           envFrom:
             - secretRef:
                 name: pgbouncer-secrets
-
           volumeMounts:
             - name: conf-volume
               mountPath: /etc/pgbouncer
@@ -34,4 +33,3 @@ spec:
         - name: conf-volume
           persistentVolumeClaim:
             claimName: config-pvc
-

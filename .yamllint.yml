@@ -8,4 +8,3 @@ rules:
   empty-lines:
     max: 1
   trailing-spaces: disable
-

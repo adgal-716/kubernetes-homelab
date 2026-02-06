@@ -27,10 +27,9 @@ spec:
           ports:
             - containerPort: 80
           volumeMounts:
-            - name: nextcloud 
+            - name: nextcloud
               mountPath: /var/www/html
       volumes:
         - name: nextcloud
           persistentVolumeClaim:
             claimName: data
-

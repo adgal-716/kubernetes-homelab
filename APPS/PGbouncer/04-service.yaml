@@ -15,4 +15,3 @@ spec:
       targetPort: 6432
   type: LoadBalancer
   loadBalancerIP: 10.10.0.3
-
