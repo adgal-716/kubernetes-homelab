@@ -1,5 +1,7 @@
 #Kubernetes Homelab (k3s-based)
 
+![K8s Manifests Validation](https://github.com/adgal-716/kubernetes-homelab/actions/workflows/k8s-validate.yml/badge.svg)
+
 This repository documents a high-availability Kubernetes homelab
 implemented using k3s as the Kubernetes distribution.
 It includes cluster infrastructure, networking, storage, and multiple

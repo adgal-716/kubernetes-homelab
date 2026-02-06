@@ -16,7 +16,10 @@ jobs:
         uses: ibiqlik/action-yamllint@v3
 
       - name: Validate Kubernetes manifests
-        uses: instrumenta/kubeconform-action@v0.4.13
+        uses: docker://ghcr.io/yannh/kubeconform:latest
         with:
-          files: .
-
+          args: >
+            -strict
+            -summary
+            -ignore-missing-schemas
+            APPS CLUSTER-CONF
