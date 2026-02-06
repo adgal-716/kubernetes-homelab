@@ -22,4 +22,7 @@ rules:
     min-spaces-from-content: 1
 
   truthy: disable
+  ignore: |
+  .github/
+  **/.git/
 
