@@ -1,0 +1,22 @@
+name: Kubernetes Manifests Validation
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: YAML lint
+        uses: ibiqlik/action-yamllint@v3
+
+      - name: Validate Kubernetes manifests
+        uses: instrumenta/kubeconform-action@v0.4.13
+        with:
+          files: .
+

@@ -8,7 +8,9 @@ stateful applications deployed using standard Kubernetes manifests.
 Although k3s is used for this implementation, all workloads rely on
 vanilla Kubernetes APIs and can be migrated to other distributions
 (EKS, GKE, AKS, kubeadm) with minimal changes.
+
 ------------------------------------------------------------------------
+
 ##Cluster Overview
 
 The cluster is designed for high availability (HA) and resilience
@@ -21,7 +23,9 @@ in small-scale or on-premise environments.
 	*3 worker nodes
 
 The architecture supports horizontal scaling by adding more worker nodes.
+
 ------------------------------------------------------------------------
+
 ##Architecture Components
 
 	*High Availability Control Plane
@@ -49,7 +53,9 @@ The architecture supports horizontal scaling by adding more worker nodes.
 		*External NFS server
 
 		*Managed through an in-cluster NFS Provisioner
+
 ------------------------------------------------------------------------
+
 ##Repository Structure
 	APPS/
 	├── Geoserver
@@ -68,25 +74,100 @@ The architecture supports horizontal scaling by adding more worker nodes.
 	*HAPROXY-CLUSTER → optional external load balancing
 
 	*APPS → application workloads and dependencies
+
 ------------------------------------------------------------------------
-##MetalLB Shared IP Configuration
+
+##Applications Overview
+
+###Nextcloud
+Self-hosted file sharing and collaboration platform.
+
+Characteristics:
+    *Uses Persistent Volumes via NFS
+    *Exposed using MetalLB LoadBalancer service
+    *Requires database connectivity via PGbouncer
+
+Secrets are intentionally excluded from the repository.
+Example secret manifests are provided under:
+
+    APPS/Nextcloud/01-example-secret.yaml
+
+#### Application URL Configuration
+
+Some applications require an externally reachable URL
+(e.g. `OVERWRITECLIURL`).
+
+This is typically required when applications generate absolute URLs
+or are accessed behind a LoadBalancer or ingress.
+
+All URLs and hostnames defined in the manifests use **example values**
+(e.g. `nextcloud.example.local`) and must be adjusted to match the
+actual LoadBalancer IP, DNS name, or ingress configuration in the
+target environment.
+
+---
+
+###Geoserver
+Geospatial data server used to publish and manage GIS services.
+
+Characteristics:
+    *Uses Persistent Volumes for data storage
+    *Exposed via LoadBalancer service
+    *Requires external database credentials
+
+---
+
+###PGbouncer
+Lightweight PostgreSQL connection pooler.
+
+Characteristics:
+    *Acts as an intermediary between applications and PostgreSQL
+    *Deployed as a stateless service
+    *Uses Secrets for database credentials
+
+---
+
+###ProvisionerNFS
+In-cluster NFS dynamic provisioner.
+
+Characteristics:
+    *Provides dynamic PersistentVolumes
+    *Backed by an external NFS server
+    *Used by all stateful applications
+
+------------------------------------------------------------------------
+
+##MetalLB Configuration
+
+MetalLB is used to provide LoadBalancer-type services in a bare-metal
+Kubernetes environment.
+
+###Shared IP Usage
 
 All services exposed via LoadBalancer use the following annotation:
 
-	metallb.universe.tf/allow-shared-ip: shared-ip
-
+    metallb.universe.tf/allow-shared-ip: shared-ip
 
 This allows multiple services to share a single external IP while using
 different ports, optimizing IP address usage in MetalLB pools.
 
-### IP Addressing Notes
+###IP Addressing
 
-The IP address ranges configured for MetalLB are **example private ranges**
-used for documentation purposes.
+MetalLB is configured using a Layer 2 address pool defined in:
 
-These ranges must be adapted to match the target environment’s network
-topology before deployment.
+    CLUSTER-CONF/01-metallb-config.yaml
+
+Example (non-production range):
+
+    addresses:
+      - 10.10.0.200-10.10.0.220
+
+The IP ranges defined in this repository are **example private ranges**
+used for documentation purposes only and must be adapted to match the
+target environment’s network topology before deployment.
+
 ------------------------------------------------------------------------
+
 ##Deployment Order
 	1. Cluster Base Configuration
 
@@ -121,7 +202,9 @@ topology before deployment.
 		Nextcloud
 
 		kubectl apply -f APPS/Nextcloud/
+
 ------------------------------------------------------------------------
+
 ##Manifest Ordering Strategy
 
 Manifests are prefixed numerically to ensure correct creation order,
@@ -151,7 +234,9 @@ Manifests reference the server using:
 
 This approach allows the NFS server IP to be changed without modifying
 any Kubernetes manifests—only the /etc/hosts entry needs updating.
+
 ------------------------------------------------------------------------
+
 ##Requirements
 
 	*3 control plane nodes (HA)
@@ -165,7 +250,9 @@ any Kubernetes manifests—only the /etc/hosts entry needs updating.
 	*External NFS server reachable from all nodes
 
 	*HAProxy (optional)
+
 ------------------------------------------------------------------------
+
 ##Project Goals
 
 This project aims to document a real-world Kubernetes homelab
@@ -181,7 +268,9 @@ implementation that emphasizes:
 
 It serves both as a learning platform and a portable reference
 for Kubernetes deployments beyond managed cloud services.
+
 ------------------------------------------------------------------------
+
 ##Notes on Security
 
 	*No real credentials or tokens are stored in this repository
@@ -190,18 +279,23 @@ for Kubernetes deployments beyond managed cloud services.
 
 	*Sensitive data must be created locally before deployment
 
-#### Application URL Configuration (Nextcloud)
-
-Some applications (e.g. Nextcloud) require an externally reachable URL
-(e.g. `OVERWRITECLIURL`).
-
-All URLs and hostnames defined in the manifests use **example values**
-(e.g. `nextcloud.example.local`) and must be adjusted to match the
-actual LoadBalancer IP, DNS name, or ingress configuration in the
-target environment.
 ------------------------------------------------------------------------
+
 ##Why k3s?
 
 k3s was chosen for its lightweight footprint and suitability for
 bare-metal and homelab environments.
 All manifests remain compatible with upstream Kubernetes.
+
+------------------------------------------------------------------------
+
+## CI/CD
+
+This repository includes a CI pipeline that validates Kubernetes
+manifests on every push and pull request, ensuring:
+
+- YAML syntax correctness
+- Kubernetes schema validation
+- Early detection of misconfigurations
+
+No automatic deployments are performed.
