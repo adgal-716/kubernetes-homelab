@@ -2,6 +2,8 @@ extends: default
 
 rules:
   new-line-at-end-of-file: disable
+  new-line-at-end-of-file: disable
+  trailing-spaces: disable
 
   empty-lines:
     max: 2
