@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgbouncer
+  namespace: pgbouncer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pgbouncer
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: pgbouncer
+    spec:
+      containers:
+        - name: pgbouncer
+          image: edoburu/pgbouncer:v1.23.1-p2
+          ports:
+            - containerPort: 6432
+          envFrom:
+            - secretRef:
+                name: pgbouncer-secrets
+
+          volumeMounts:
+            - name: conf-volume
+              mountPath: /etc/pgbouncer
+      volumes:
+        - name: conf-volume
+          persistentVolumeClaim:
+            claimName: config-pvc
+

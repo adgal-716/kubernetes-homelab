@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy-k3s-config
+  namespace: kube-system
+data:
+  haproxy.cfg: |
+    global
+        log stdout format raw local0
+        maxconn 2048
+        daemon
+
+    defaults
+        log     global
+        mode    tcp
+        option  tcplog
+        option  dontlognull
+        retries 3
+        timeout connect 5s
+        timeout client 50s
+        timeout server 50s
+
+    frontend k3s_api
+        bind *:6443
+        default_backend k3s_masters
+
+    backend k3s_masters
+        balance roundrobin
+        option tcp-check
+        server master01 10.10.0.10:6443 check
+        server master02 10.10.0.11:6443 check
+        server master03 10.10.0.12:6443 check
+    listen stats
+        bind *:8404
+        mode http
+        stats enable
+        stats uri /
+        stats refresh 5s
+        stats realm Haproxy\ Statistics
+        stats auth admin:4dm1n

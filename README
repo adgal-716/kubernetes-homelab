@@ -1,0 +1,207 @@
+#Kubernetes Homelab (k3s-based)
+
+This repository documents a high-availability Kubernetes homelab
+implemented using k3s as the Kubernetes distribution.
+It includes cluster infrastructure, networking, storage, and multiple
+stateful applications deployed using standard Kubernetes manifests.
+
+Although k3s is used for this implementation, all workloads rely on
+vanilla Kubernetes APIs and can be migrated to other distributions
+(EKS, GKE, AKS, kubeadm) with minimal changes.
+------------------------------------------------------------------------
+##Cluster Overview
+
+The cluster is designed for high availability (HA) and resilience
+in small-scale or on-premise environments.
+
+###Current implementation:
+
+	*3 control plane nodes
+
+	*3 worker nodes
+
+The architecture supports horizontal scaling by adding more worker nodes.
+------------------------------------------------------------------------
+##Architecture Components
+
+	*High Availability Control Plane
+
+		*3 k3s control plane nodes
+
+		*Fault-tolerant Kubernetes control layer
+
+	*Worker Nodes
+
+		*Dedicated nodes for application workloads
+
+	*MetalLB
+
+		*Provides LoadBalancer-type services in bare-metal environments
+
+		*Supports shared IP usage across multiple services
+
+	*HAProxy (optional)
+
+		*External or additional load balancer for ingress traffic
+
+	*Persistent Storage (NFS)
+
+		*External NFS server
+
+		*Managed through an in-cluster NFS Provisioner
+------------------------------------------------------------------------
+##Repository Structure
+	APPS/
+	├── Geoserver
+	├── Nextcloud
+	├── PGbouncer
+	└── ProvisionerNFS
+
+	CLUSTER-CONF/
+	HAPROXY-CLUSTER/
+
+
+###Separation of concerns:
+
+	*CLUSTER-CONF → core cluster infrastructure
+
+	*HAPROXY-CLUSTER → optional external load balancing
+
+	*APPS → application workloads and dependencies
+------------------------------------------------------------------------
+##MetalLB Shared IP Configuration
+
+All services exposed via LoadBalancer use the following annotation:
+
+	metallb.universe.tf/allow-shared-ip: shared-ip
+
+
+This allows multiple services to share a single external IP while using
+different ports, optimizing IP address usage in MetalLB pools.
+
+### IP Addressing Notes
+
+The IP address ranges configured for MetalLB are **example private ranges**
+used for documentation purposes.
+
+These ranges must be adapted to match the target environment’s network
+topology before deployment.
+------------------------------------------------------------------------
+##Deployment Order
+	1. Cluster Base Configuration
+
+	Includes MetalLB, storage classes, dashboard configuration, and
+	administrative resources.
+
+		kubectl apply -f CLUSTER-CONF/
+
+	2. External Load Balancer (optional)
+
+	Required only if HAProxy is part of the architecture.
+
+		kubectl apply -f HAPROXY-CLUSTER/
+
+	3. Applications (recommended order)
+
+		NFS Provisioner
+
+		kubectl apply -f APPS/ProvisionerNFS/
+
+
+		PGbouncer
+
+		kubectl apply -f APPS/PGbouncer/
+
+
+		Geoserver
+
+		kubectl apply -f APPS/Geoserver/
+
+
+		Nextcloud
+
+		kubectl apply -f APPS/Nextcloud/
+------------------------------------------------------------------------
+##Manifest Ordering Strategy
+
+Manifests are prefixed numerically to ensure correct creation order,
+as Kubernetes applies files alphabetically:
+
+	01-secret.yaml
+	02-pvc.yaml
+	03-deployment.yaml
+	04-service.yaml
+
+
+This avoids race conditions where deployments depend on resources
+(Secrets, PVCs) that do not yet exist.
+
+##NFS Provisioner Dependency
+
+The NFS Provisioner relies on an external NFS server defined in the
+node’s /etc/hosts file:
+
+	<NFS_SERVER_IP>   storage
+
+
+Manifests reference the server using:
+
+	server: storage
+
+
+This approach allows the NFS server IP to be changed without modifying
+any Kubernetes manifests—only the /etc/hosts entry needs updating.
+------------------------------------------------------------------------
+##Requirements
+
+	*3 control plane nodes (HA)
+
+	*1 or more worker nodes (current setup: 3)
+
+	*k3s installed on all nodes
+
+	*MetalLB configured with a valid IP range
+
+	*External NFS server reachable from all nodes
+
+	*HAProxy (optional)
+------------------------------------------------------------------------
+##Project Goals
+
+This project aims to document a real-world Kubernetes homelab
+implementation that emphasizes:
+
+	*High availability in small environments
+
+	*Clean and reproducible manifests
+
+	*Separation of infrastructure and workloads
+
+	*Practical Kubernetes patterns applicable to production systems
+
+It serves both as a learning platform and a portable reference
+for Kubernetes deployments beyond managed cloud services.
+------------------------------------------------------------------------
+##Notes on Security
+
+	*No real credentials or tokens are stored in this repository
+
+	*Secret manifests are provided as examples only
+
+	*Sensitive data must be created locally before deployment
+
+#### Application URL Configuration (Nextcloud)
+
+Some applications (e.g. Nextcloud) require an externally reachable URL
+(e.g. `OVERWRITECLIURL`).
+
+All URLs and hostnames defined in the manifests use **example values**
+(e.g. `nextcloud.example.local`) and must be adjusted to match the
+actual LoadBalancer IP, DNS name, or ingress configuration in the
+target environment.
+------------------------------------------------------------------------
+##Why k3s?
+
+k3s was chosen for its lightweight footprint and suitability for
+bare-metal and homelab environments.
+All manifests remain compatible with upstream Kubernetes.

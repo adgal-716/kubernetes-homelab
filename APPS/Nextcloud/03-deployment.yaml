@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-deployment
+  namespace: nextcloud
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nextcloud
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      containers:
+        - name: nextcloud
+          image: nextcloud:27.0.2
+          envFrom:
+            - secretRef:
+                name: nextcloud-secrets
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nextcloud 
+              mountPath: /var/www/html
+      volumes:
+        - name: nextcloud
+          persistentVolumeClaim:
+            claimName: data
+

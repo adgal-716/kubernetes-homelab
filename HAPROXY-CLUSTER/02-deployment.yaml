@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haproxy-k3s
+  namespace: kube-system
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: haproxy-k3s
+  template:
+    metadata:
+      labels:
+        app: haproxy-k3s
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: "true" 
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+          effect: "NoSchedule"
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+      - name: haproxy
+        image: haproxy:3.1.13
+        ports:
+        - containerPort: 6443
+        - containerPort: 8404
+        volumeMounts:
+        - name: config
+          mountPath: /usr/local/etc/haproxy/haproxy.cfg
+          subPath: haproxy.cfg
+      volumes:
+      - name: config
+        configMap:
+          name: haproxy-k3s-config
+

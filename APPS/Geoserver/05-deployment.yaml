@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geoserver
+  namespace: geoserver
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: geoserver
+  template:
+    metadata:
+      labels:
+        app: geoserver
+    spec:
+      containers:
+        - name: geoserver
+          image: kartoza/geoserver:2.28.0
+          envFrom:
+            - secretRef:
+                name: secret-geo
+          volumeMounts:
+            - name: data
+              mountPath: /opt/geoserver/data_dir
+            - name: cache
+              mountPath: /var/cache/gwc
+            - name: info
+              mountPath: /home/geoserveruser/info
+          resources:
+            requests:
+              cpu: "4"
+              memory: "4Gi"
+            limits:
+              cpu: "8"
+              memory: "8Gi"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: geoserver
+              topologyKey: kubernetes.io/hostname
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-data
+        - name: cache
+          persistentVolumeClaim:
+            claimName: pvc-cache
+        - name: info
+          persistentVolumeClaim:
+            claimName: pvc-info
