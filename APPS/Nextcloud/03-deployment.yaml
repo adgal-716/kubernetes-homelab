@@ -33,3 +33,4 @@ spec:
         - name: nextcloud
           persistentVolumeClaim:
             claimName: data
+            

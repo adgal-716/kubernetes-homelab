@@ -36,4 +36,3 @@ spec:
       - name: config
         configMap:
           name: haproxy-k3s-config
-

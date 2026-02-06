@@ -33,3 +33,4 @@ spec:
         - name: conf-volume
           persistentVolumeClaim:
             claimName: config-pvc
+            
