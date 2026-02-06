@@ -1,6 +1,7 @@
 extends: default
 
 rules:
+  document-start: disable
   new-line-at-end-of-file: disable
   new-line-at-end-of-file: disable
   trailing-spaces: disable
@@ -22,7 +23,4 @@ rules:
     min-spaces-from-content: 1
 
   truthy: disable
-  ignore: |
-  .github/
-  **/.git/
 
