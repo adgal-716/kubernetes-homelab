@@ -63,7 +63,7 @@ The architecture supports horizontal scaling by adding more worker nodes.
 	├── Geoserver
 	├── Nextcloud
 	├── PGbouncer
-	└── ProvisionerNFS
+	└── Provisioner-NFS
 
 	CLUSTER-CONF/
 	HAPROXY-CLUSTER/
@@ -129,7 +129,7 @@ Characteristics:
 
 ---
 
-###ProvisionerNFS
+###Provisioner-NFS
 In-cluster NFS dynamic provisioner.
 
 Characteristics:
